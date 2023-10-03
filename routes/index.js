@@ -1,10 +1,14 @@
 
 const notes = require("express").Router();
 const fs = require("fs");
+const uuid = require('uuid')
 
 const express = require("express");
 
 const app = express();
+
+
+
 // handles get request
 notes.get('/', (req, res) => {
     // log response in terminal
@@ -30,6 +34,7 @@ notes.post('/', (req, res) => {
     if (title && text) {
       // variable for the object we will save
       const newNote = {
+        id: uuid.v4(),
         title,
         text,
       };
@@ -73,9 +78,56 @@ notes.post('/', (req, res) => {
 })
 
 // handles delete request
-notes.delete('/', (req, res) => {
-    // log response in terminal
-    console.log(`${req.method} request made`)
-})
+notes.delete("/:id", (req, res) => {
+    const noteId = req.params.id
+
+  // Log the HTTP method and requested note ID
+  console.log(`${req.method} request made for note ID: ${req.params.id}`);
+
+  // Read the existing notes from the JSON file
+  fs.readFile("./db/db.json", "utf8", (err, data) => {
+    if (err) {
+      console.error(err);
+      res.status(500).json("Error reading notes");
+    } else {
+      try {
+        // Parse the JSON data into an array of notes
+        const parsedNotes = JSON.parse(data);
+
+        // Find the index of the note with the specified ID
+        const noteIndex = parsedNotes.findIndex(
+          (note) => note.id === noteId
+        );
+
+        if (noteIndex !== -1) {
+          // Remove the note from the array
+          parsedNotes.splice(noteIndex, 1);
+
+          // Write the updated notes back to the JSON file
+          fs.writeFile(
+            "./db/db.json",
+            JSON.stringify(parsedNotes, null, 2),
+            (writeErr) => {
+              if (writeErr) {
+                console.error(writeErr);
+                res.status(500).json("Error updating notes");
+              } else {
+                console.info("Note deleted successfully");
+                res.status(200).json("Note deleted successfully");
+              }
+            }
+          );
+        } else {
+          // If the note with the specified ID was not found, respond with an error
+          console.error(`Note with ID ${req.params.id} not found`);
+          res.status(404).json("Note not found");
+        }
+      } catch (parseError) {
+        console.error("Error parsing JSON:", parseError);
+        res.status(500).json("Error parsing notes");
+      }
+    }
+  });
+});
 
 module.exports = notes;
