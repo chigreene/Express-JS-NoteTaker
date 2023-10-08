@@ -7,22 +7,21 @@ const express = require("express");
 
 const app = express();
 
-
-
 // handles get request
 notes.get('/', (req, res) => {
-    // log response in terminal
-    console.log(`${req.method} request made`);
 
-    // reads from data base and sends data to client
-    fs.readFile('./db/db.json', 'utf8', (err, data) => {
-        if (err) {
-            console.log(err);
-        } else {
-            const parsedNotes = JSON.parse(data)
-            res.json(parsedNotes)
-        }
-    })
+  // reads from data base and sends data to client
+  fs.readFile("./db/db.json", "utf8", (err, data) => {
+    if (err) {
+      console.log(err);
+    } else {
+      const parsedNotes = JSON.parse(data);
+      res.json(parsedNotes);
+    }
+  });
+
+  // log response in terminal
+  console.log(`${req.method} request made to ${req.path}`);
 })
 
 // handles post requests
@@ -57,7 +56,7 @@ notes.post('/', (req, res) => {
             (writeErr) =>
               writeErr
                 ? console.error(writeErr)
-                : console.info("successfully updated reviews!")
+                : console.info("successfully updated data base with new note!")
           );
         }
       });
@@ -73,16 +72,13 @@ notes.post('/', (req, res) => {
         res.status(500).json('Error in posting note')
     }
     // log response method in terminal
-    console.log(`${req.method} request made`)
+    console.log(`${req.method} request made to ${req.path}`)
     
 })
 
 // handles delete request
 notes.delete("/:id", (req, res) => {
-    const noteId = req.params.id
-
-  // Log the HTTP method and requested note ID
-  console.log(`${req.method} request made for note ID: ${req.params.id}`);
+  const noteId = req.params.id;
 
   // Read the existing notes from the JSON file
   fs.readFile("./db/db.json", "utf8", (err, data) => {
@@ -95,9 +91,7 @@ notes.delete("/:id", (req, res) => {
         const parsedNotes = JSON.parse(data);
 
         // Find the index of the note with the specified ID
-        const noteIndex = parsedNotes.findIndex(
-          (note) => note.id === noteId
-        );
+        const noteIndex = parsedNotes.findIndex((note) => note.id === noteId);
 
         if (noteIndex !== -1) {
           // Remove the note from the array
@@ -112,8 +106,10 @@ notes.delete("/:id", (req, res) => {
                 console.error(writeErr);
                 res.status(500).json("Error updating notes");
               } else {
-                console.info("Note deleted successfully");
-                res.status(200).json("Note deleted successfully");
+                console.info("Note deleted successfully from data base");
+                res
+                  .status(200)
+                  .json("Note deleted successfully deleted from data base");
               }
             }
           );
@@ -128,6 +124,9 @@ notes.delete("/:id", (req, res) => {
       }
     }
   });
+
+  // Log the HTTP method and requested note ID
+  console.log(`${req.method} request made for note ID: ${req.params.id}`);
 });
 
 module.exports = notes;

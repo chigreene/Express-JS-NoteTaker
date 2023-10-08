@@ -14,6 +14,7 @@ const app = express()
 // middleware to tell the app to expect JSON and allow it to use encoded url requests
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }))
+
 // add route for router
 app.use('/api/notes', notes)
 
@@ -30,6 +31,7 @@ app.get('/notes', (req, res) =>
     res.sendFile(path.join(__dirname, '/public/notes.html'))
 );
 
+// tells the server to start listening on a designated port or a static port if not given a port to listen to
 app.listen(PORT, () => {
     console.log(`Listening for requests on port ${PORT}!`);
 })
